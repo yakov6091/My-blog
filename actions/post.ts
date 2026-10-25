@@ -3,8 +3,46 @@
 import { db } from "@/db";
 import { posts } from "@/db/schema";
 import { insertPostSchema } from "@/db/zod";
+import { desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from 'zod';
+
+// Get all posts (sorted by newest first)
+export async function getAllPosts() {
+    try {
+        const allPosts = await db
+            .select()
+            .from(posts)
+            .orderBy(desc(posts.createdAt));
+
+        return { success: true, data: allPosts };
+    } catch (err) {
+        console.error('Error fetching posts:', err);
+        return { success: false, error: 'Failed to fetch posts' };
+    }
+};
+
+// Get a single post by its URL slug
+export async function getPostBySlug(slug: string) {
+    try {
+        const [post] = await db
+            .select()
+            .from(posts)
+            .where(eq(posts.slug, slug))
+            .limit(1);
+
+        if (!post) {
+            return { success: false, error: 'Post not found' };
+        }
+
+        return { success: true, data: post };
+    } catch (err) {
+        console.error('Error fetching post by slug:', err);
+        return { success: false, error: 'Failed to fetch post' };
+    }
+};
+
+
 
 export async function createPost(formData: FormData) {
     // Read raw form input
