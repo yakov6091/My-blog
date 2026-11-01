@@ -16,7 +16,8 @@ export const posts = pgTable('posts', {
     slug: varchar('slug', { length: 255 }).notNull().unique(),
     content: text('content').notNull(),
     imageUrl: text('image_url'),
-    createdAt: timestamp('created_at').defaultNow().notNull()
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export const comments = pgTable('comments', {

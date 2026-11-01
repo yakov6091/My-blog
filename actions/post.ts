@@ -7,6 +7,12 @@ import { desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from 'zod';
 
+interface PostData {
+    title: string,
+    content: string,
+    slug: string,
+}
+
 // Get all posts (sorted by newest first)
 export async function getAllPosts() {
     try {
@@ -42,8 +48,7 @@ export async function getPostBySlug(slug: string) {
     }
 };
 
-
-
+// Create new post
 export async function createPost(formData: FormData) {
     // Read raw form input
     const rawData = {
@@ -58,6 +63,7 @@ export async function createPost(formData: FormData) {
 
     // If validation fails, retrun error back to the UI
     if (!validationResult.success) {
+        console.error('❌ Zod Validation Failed:', validationResult.error.flatten())
         const flattened = z.flattenError(validationResult.error);
 
         return {
@@ -65,7 +71,6 @@ export async function createPost(formData: FormData) {
             errors: flattened.fieldErrors,
         };
     }
-
     // Database Insertion 
     try {
         await db.insert(posts).values(validationResult.data);
@@ -82,5 +87,48 @@ export async function createPost(formData: FormData) {
     } catch (error) {
         console.error('Error creating post:', error);
         return { success: false, error: 'Database insert failed' };
+    }
+};
+
+// Update an exisiting post
+export async function updatePost(id: string, data: PostData) {
+    try {
+        await db
+            .update(posts)
+            .set({
+                title: data.title,
+                content: data.content,
+                slug: data.slug,
+                updatedAt: new Date(),
+            })
+            .where(eq(posts.id, id))
+
+        try {
+            revalidatePath('/');
+        } catch (error) {
+
+        }
+
+        return { success: true };
+
+    } catch (error) {
+        console.error('Error updating post:', error);
+        return { success: false, error: 'Failed to update post' };
+    }
+};
+
+export async function deletePost(id: string) {
+    try {
+        await db.delete(posts).where(eq(posts.id, id));
+
+        try {
+            revalidatePath('/');
+        } catch (e) {
+            // Safe fallback for standalone scripts
+        }
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        return { success: false, error: 'Failed to delete post' };
     }
 };
