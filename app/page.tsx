@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { auth } from '@/lib/auth';
+import { auth, signOut } from '@/lib/auth';
 import { getAllPosts } from '@/actions/post';
 
 export default async function HomePage() {
@@ -14,7 +14,7 @@ export default async function HomePage() {
         <div className="max-2-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold tracking-tight">My Blog</Link>
 
-          <nav className="flex items-center gap-4 text-sm">
+          <nav className="flex items-center gap-2 text-sm">
             {session?.user ? (
               <>
                 <span className="text-lg text-slate-600">
@@ -22,22 +22,37 @@ export default async function HomePage() {
                   <strong className="text-slate-800">
                     {session.user.name || session.user.email}{' '}
                   </strong>
-                  <Link
-                    href="/posts/new"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-600 text-xs font-xl text-white shadow-sm hover:bg-blue-500 active:scale-[0.98] transition-all"
-                  >
-                    <svg
-                      xmlns="http://w3.org"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-3.5 h-3.5 -ml-0.5"
-                      aria-hidden="true"
-                    >
-                      <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-                    </svg>
-                    <span>New Post</span>
-                  </Link>
                 </span>
+
+                <Link
+                  href="/posts/new"
+                  className="inline-flex items-center gap-1 px-2.5 py-2 rounded-md bg-blue-600 text-xs font-xl text-white shadow-sm hover:bg-blue-500 active:scale-[0.98] transition-all"
+                >
+                  <svg
+                    xmlns="http://w3.org"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="w-3.5 h-3.5 -ml-0.5"
+                    aria-hidden="true"
+                  >
+                    <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                  </svg>
+                  <span>New Post</span>
+                </Link>
+
+                <form
+                  action={async () => {
+                    'use server';
+                    await signOut({ redirectTo: '/' });
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-1 px-2.5 py-2 rounded-md bg-slate-600 text-xs font-xl text-white shadow-sm hover:bg-slate-500 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    Log Out
+                  </button>
+                </form>
               </>
             ) : (
               <>
